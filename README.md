@@ -16,9 +16,7 @@ Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd
 2. Run as root:
 ```bash
 wget -qO provision.sh [https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh](https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh) && chmod +x provision.sh && sudo ./provision.sh
-"``bash
-sudo ./provision.sh
-"
+```
 
 ## Troubleshooting
 * **SSH Socket Issues:** If port changes don't show up in `ss -lntp`, the scrist automatically triggers `systemctl restart ssh.socket`.
