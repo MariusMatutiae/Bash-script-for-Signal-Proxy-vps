@@ -13,10 +13,12 @@ Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd
 
 ## Quick Start
 1. Point your DNS A-record to the VPS.
-2. Run as root:
+2. Run the one-liner as root to install automatically:
 ```bash
-wget -qO provision.sh [https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh](https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh) && chmod +x provision.sh && sudo ./provision.sh
+wget -qO provision.sh https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh && chmod +x provision.sh && sudo ./provision.sh
 ```
+## Note
+The script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
 
 ## Troubleshooting
 * **SSH Socket Issues:** If port changes don't show up in `ss -lntp`, the script automatically triggers `systemctl restart ssh.socket`.
