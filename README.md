@@ -13,8 +13,9 @@ Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd
 
 ## Quick Start
 1. Point your DNS A-record to the VPS.
-2. chmod +755 ./provision.sh
-3. Run as root:
+2. Run as root:
+```bash
+wget -qO provision.sh [https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh](https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh) && chmod +x provision.sh && sudo ./provision.sh
 "``bash
 sudo ./provision.sh
 "``
