@@ -4,6 +4,7 @@
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-required-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?logo=gnu-bash&logoColor=white)
 
 A surgical bash script designed to deploy a **Signal TLS Proxy** with zero-lockout SSH migration and "Docker-safe" firewalling.
 
