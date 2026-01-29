@@ -1,5 +1,10 @@
 # Signal Proxy Provisioner (Ubuntu 24.04 optimized)
 
+![Signal](https://img.shields.io/badge/Signal-Proxy-blue?logo=signal&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-required-2496ED?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 A surgical bash script designed to deploy a **Signal TLS Proxy** with zero-lockout SSH migration and "Docker-safe" firewalling.
 
 ## Why this exists
