@@ -10,7 +10,7 @@ A surgical bash script designed to deploy a **Signal TLS Proxy** with zero-locko
 
 ## Why this exists
 Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd` socket activation for SSH. This script implements a **"Safety Bridge" philosophy**: it never closes the old SSH port until you have confirmed the new one is functional,
-if you do NOT set AUTO_COMMIT=true (AUTO_COMMIT=false is the default.
+if you do NOT set AUTO_COMMIT=true (AUTO_COMMIT=false is the default).
 
 ### Key Features
 * **Zero-Lockout SSH Migration:** Implements a dual-listening "Safety Bridge" (Port 22 + Custom Port) during setup.
