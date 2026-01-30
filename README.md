@@ -18,10 +18,10 @@ Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd
 * **Hardened by Default:** Drops IPv6, disables passwords, and sets a default `DROP` policy on IPv4.
 
 ## Deployment Modes
-The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you.
+The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you. In fully automated modes (1 and 2) the script will pose only at the very end.
 
 ### 1. The One-Liner (Recommended)
-Pass variables directly on the same line to trigger a fully automated install:
+Pass variables directly on the same line to trigger a nearly automated install (the Docker container will ask you anyway about the FQDN):
 ```bash
 sudo ADMIN_USER=john SSH_PORT=55555 FQDN=signal.example.com AUTO_COMMIT=true SSH_PUBKEY="ssh-rsa ..." bash headless.sh 
 ```
@@ -39,10 +39,10 @@ sudo -E bash headless.sh
 
 
 ### 3. Interactive Mode
-If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
+If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration. It will always ask for the FQDN twice. 
 
 ## Note
-The script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
+In interactive mode, the script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
 
 > [!IMPORTANT]
 > **Security Architecture: Passwordless Operation**
@@ -60,6 +60,7 @@ Since this script disables passwords for maximum security, the provider's "Web C
 * **Certbot Failures:** Ensure Port 80 is not blocked by your VPS provider's external dashboard (security groups).
 * **Logs:** Check container status with `docker compose ps` in the repository directory.
 * **Docker Firewall Conflicts**: If you manually change firewall rules while Docker is running, Docker might bypass them. Always let the script handle the rule staging by stopping Docker first.
+* **When all else fails..**: Remove /var/log/vps-provision* and start all over again. 
 
 ## Maintenance
 The script tracks its progress in `/var/lib/vps-provision.state`. If it fails, fix the issue and run it again; it will skip the completed steps.
