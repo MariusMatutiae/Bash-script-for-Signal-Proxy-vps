@@ -19,7 +19,7 @@ if you do NOT set AUTO_COMMIT=true (AUTO_COMMIT=false is the default).
 * **Hardened by Default:** Drops IPv6, disables passwords, and sets a default `DROP` policy on IPv4.
 
 ## Deployment Modes
-The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you. In fully automated modes (1 and 2) the script will pose only at the very end.
+The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you. 
 
 ### 1. The One-Liner (Recommended)
 Pass variables directly on the same line to trigger a fully automated install:
