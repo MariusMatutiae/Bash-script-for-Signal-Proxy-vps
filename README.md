@@ -35,7 +35,7 @@ sudo -E bash headless.sh
 ```H**(Note: Use `sudo -E` to ensure your exported variables are passed to the root environment.)**
 
 ### 3. Interactive Mode
-If the script detects that a required variable (like `SSH_PORT` or `FQDN`) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
+If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
 
 ## Note
 The script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
