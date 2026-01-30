@@ -16,10 +16,16 @@ echo -e "****************************************************************${RST}"
 # --- Config & State ---
 STATE_FILE="/var/lib/vps-provision.state"
 RUNTIME_FILE="/var/lib/vps-provision.vars"
+
+# Check for root
 [[ "${EUID}" -eq 0 ]] || die "Must be run as root (sudo -i)."
 
 load_vars() { 
-    [[ -f "$RUNTIME_FILE" ]] && source "$RUNTIME_FILE"
+    if [[ -f "$RUNTIME_FILE" ]]; then
+        log "Loading existing variables from $RUNTIME_FILE"
+        source "$RUNTIME_FILE"
+    fi
+    return 0
 }
 
 save_vars() {
@@ -35,7 +41,6 @@ EOF
 
 step_1_system_upgrade_deps() {
     log "Performing full system upgrade (this ensures latest security patches)..."
-    # Ensure no interactive prompts during upgrade
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
@@ -53,22 +58,18 @@ step_1_system_upgrade_deps() {
 step_2_collect_config() {
     log "Verifying Configuration..."
 
-    # 1. ADMIN_USER - NO DEFAULTS
     if [[ -z "${ADMIN_USER:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter Admin Username: " ADMIN_USER
     fi
 
-    # 2. SSH_PORT - NO DEFAULTS
     if [[ -z "${SSH_PORT:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter Target SSH Port: " SSH_PORT
     fi
 
-    # 3. FQDN - NO DEFAULTS
     if [[ -z "${FQDN:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter FQDN (e.g., signal.example.com): " FQDN
     fi
 
-    # 4. SSH_PUBKEY - NO DEFAULTS
     if [[ -z "${SSH_PUBKEY:-}" ]]; then
         echo -e "${YLW}[PROMPT]${RST} Paste SSH Public Key (one line):"
         read -r SSH_PUBKEY
@@ -185,9 +186,17 @@ EOF
 
 # --- Main Dispatcher ---
 load_vars
-STAGES=("step_1_system_upgrade_deps" "step_2_collect_config" "step_3_identity_ssh" "step_4_repo_prep" "step_5_firewall_stage" "step_6_cert_and_commit")
-CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo 0)
 
+STAGES=("step_1_system_upgrade_deps" "step_2_collect_config" "step_3_identity_ssh" "step_4_repo_prep" "step_5_firewall_stage" "step_6_cert_and_commit")
+
+# Robustly get current stage
+if [[ -f "$STATE_FILE" ]]; then
+    CURRENT=$(cat "$STATE_FILE")
+else
+    CURRENT=0
+fi
+
+# Math-safe loop
 for i in "${!STAGES[@]}"; do
     if (( i >= CURRENT )); then
         ${STAGES[$i]}
