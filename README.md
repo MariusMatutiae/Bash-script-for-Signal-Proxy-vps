@@ -44,6 +44,13 @@ If the script detects that a required variable (like SSH_PORT or FQDN) is missin
 ## Note
 The script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
 
+> [!IMPORTANT]
+> **Security Architecture: Passwordless Operation**
+> To maximize hardening, this script creates the admin user with `--disabled-password`. 
+> - **Login:** Access is strictly limited to the provided SSH Public Key. 
+> - **Privileges:** The user is granted `NOPASSWD` sudo rights to allow for non-interactive system management and Docker operations. 
+> - **Result:** There are no user passwords on the system to be brute-forced.
+
 ## Troubleshooting
 * **SSH Socket Issues:** If port changes don't show up in `ss -lntp`, the script automatically triggers `systemctl restart ssh.socket`.
 * **Certbot Failures:** Ensure Port 80 is not blocked by your VPS provider's external dashboard (security groups).
