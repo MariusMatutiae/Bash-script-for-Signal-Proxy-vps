@@ -28,11 +28,13 @@ sudo ADMIN_USER=john SSH_PORT=55555 FQDN=signal.example.com AUTO_COMMIT=true SSH
 
 ### 2. Using Export
 If you are deploying multiple machines in one session, you can export the variables first:
-bash
+
 export SSH_PUBKEY="your-key-here"
 export ADMIN_USER="proxyadmin"
 sudo -E bash headless.sh
-```H**(Note: Use `sudo -E` to ensure your exported variables are passed to the root environment.)**
+
+**Note:** Use **sudo -E** to ensure your exported variables are passed throug
+
 
 ### 3. Interactive Mode
 If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
