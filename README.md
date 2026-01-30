@@ -1,7 +1,7 @@
 # Signal Proxy Provisioner (Ubuntu 24.04 optimized)
 
 ![Signal](https://img.shields.io/badge/Signal-Proxy-blue?logo=signal&logoColor=white)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntp&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-required-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?logo=gnu-bash&logoColor=white)
@@ -12,17 +12,31 @@ A surgical bash script designed to deploy a **Signal TLS Proxy** with zero-locko
 Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd` socket activation for SSH. This script implements a **"Safety Bridge" philosophy**: it never closes the old SSH port until you have confirmed the new one is functional.
 
 ### Key Features
-* **Zero-Lockout SSH Migration (keeps Port 22 open until you've successfully logged in on the new port).":** Implements a dual-listening "Safety Bridge" (Port 22 + Custom Port) during setup.
+* **Zero-Lockout SSH Migration:** Implements a dual-listening "Safety Bridge" (Port 22 + Custom Port) during setup.
 * **Ubuntu 24.04 Socket-Aware:** Correctly handles `ssh.socket` to ensure port changes persist across reboots.
 * **Docker-Safe Firewalling:** Intelligently sequences rules so Docker doesn't bypass your security policy.
 * **Hardened by Default:** Drops IPv6, disables passwords, and sets a default `DROP` policy on IPv4.
 
-## Quick Start
-1. Point your DNS A-record to the VPS.
-2. Run the one-liner as root to install automatically:
+## Deployment Modes
+The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you.
+
+### 1. The One-Liner (Recommended)
+Pass variables directly on the same line to trigger a fully automated install:
 ```bash
-wget -qO provision.sh https://raw.githubusercontent.com/MariusMatutiae/Bash-script-for-Signal-Proxy-vps/main/provision.sh && chmod +x provision.sh && sudo ./provision.sh
+sudo ADMIN_USER=john SSH_PORT=55555 FQDN=signal.example.com AUTO_COMMIT=true SSH_PUBKEY="ssh-rsa ..." bash headless.sh 
 ```
+
+### 2. Using Export
+If you are deploying multiple machines in one session, you can export the variables first:
+bash
+export SSH_PUBKEY="your-key-here"
+export ADMIN_USER="proxyadmin"
+sudo -E bash headless.sh
+```H**(Note: Use `sudo -E` to ensure your exported variables are passed to the root environment.)**
+
+### 3. Interactive Mode
+If the script detects that a required variable (like `SSH_PORT` or `FQDN`) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
+
 ## Note
 The script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
 
@@ -34,3 +48,4 @@ The script will keep Port 22 open alongside your new port. **Do not close your c
 
 ## Maintenance
 The script tracks its progress in `/var/lib/vps-provision.state`. If it fails, fix the issue and run it again; it will skip the completed steps.
+
