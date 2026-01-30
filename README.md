@@ -51,6 +51,10 @@ The script will keep Port 22 open alongside your new port. **Do not close your c
 > - **Privileges:** The user is granted `NOPASSWD` sudo rights to allow for non-interactive system management and Docker operations. 
 > - **Result:** There are no user passwords on the system to be brute-forced.
 
+
+**Pro-Tip: Web Console Access**
+Since this script disables passwords for maximum security, the provider's "Web Console" will not be accessible for login. In an emergency (e.g., loss of SSH keys), you must use the provider's 'Rescue Mode' to mount the disk and manually set a password or replace the authorized_keys file.
+
 ## Troubleshooting
 * **SSH Socket Issues:** If port changes don't show up in `ss -lntp`, the script automatically triggers `systemctl restart ssh.socket`.
 * **Certbot Failures:** Ensure Port 80 is not blocked by your VPS provider's external dashboard (security groups).
