@@ -29,9 +29,11 @@ sudo ADMIN_USER=john SSH_PORT=55555 FQDN=signal.example.com AUTO_COMMIT=true SSH
 ### 2. Using Export
 If you are deploying multiple machines in one session, you can export the variables first:
 
+```bash
 export SSH_PUBKEY="your-key-here"
 export ADMIN_USER="proxyadmin"
 sudo -E bash headless.sh
+```
 
 **Note:** Use **sudo -E** to ensure your exported variables are passed throug
 
