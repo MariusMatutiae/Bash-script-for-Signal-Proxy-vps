@@ -35,7 +35,7 @@ export ADMIN_USER="proxyadmin"
 sudo -E bash headless.sh
 ```
 
-**Note:** Use **sudo -E** to ensure your exported variables are passed throug
+**Note:** Use **sudo -E** to ensure your exported variables are passed through
 
 
 ### 3. Interactive Mode
