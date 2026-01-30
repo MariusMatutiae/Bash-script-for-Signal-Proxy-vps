@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# headless.sh - Signal Proxy Hardened Provisioner
+# headless.sh - Signal Proxy Hardened Provisioner (v14.2)
 set -euo pipefail
 
 # --- UI & Helpers ---
@@ -10,7 +10,7 @@ die() { echo "${RED}[!]${RST} $*" >&2; exit 1; }
 
 # --- Header ---
 echo -e "${YLW}****************************************************************"
-echo -e " SIGNAL PROXY PROVISIONER: HEADLESS MODE"
+echo -e " SIGNAL PROXY PROVISIONER: HEADLESS MODE v14.2"
 echo -e "****************************************************************${RST}"
 
 # --- Config & State ---
@@ -33,9 +33,15 @@ EOF
 
 # --- Step Functions ---
 
-step_1_deps_docker() {
+step_1_system_upgrade_deps() {
+    log "Performing full system upgrade (this ensures latest security patches)..."
+    # Ensure no interactive prompts during upgrade
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
+    
     log "Installing base dependencies and Docker..."
-    apt-get update && apt-get install -y ca-certificates curl gnupg git jq iptables-persistent netfilter-persistent dnsutils
+    apt-get install -y ca-certificates curl gnupg git jq iptables-persistent netfilter-persistent dnsutils
     
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
@@ -47,22 +53,22 @@ step_1_deps_docker() {
 step_2_collect_config() {
     log "Verifying Configuration..."
 
-    # 1. ADMIN_USER
+    # 1. ADMIN_USER - NO DEFAULTS
     if [[ -z "${ADMIN_USER:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter Admin Username: " ADMIN_USER
     fi
 
-    # 2. SSH_PORT
+    # 2. SSH_PORT - NO DEFAULTS
     if [[ -z "${SSH_PORT:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter Target SSH Port: " SSH_PORT
     fi
 
-    # 3. FQDN
+    # 3. FQDN - NO DEFAULTS
     if [[ -z "${FQDN:-}" ]]; then
         read -r -p "${YLW}[PROMPT]${RST} Enter FQDN (e.g., signal.example.com): " FQDN
     fi
 
-    # 4. SSH_PUBKEY
+    # 4. SSH_PUBKEY - NO DEFAULTS
     if [[ -z "${SSH_PUBKEY:-}" ]]; then
         echo -e "${YLW}[PROMPT]${RST} Paste SSH Public Key (one line):"
         read -r SSH_PUBKEY
@@ -70,7 +76,6 @@ step_2_collect_config() {
 
     REPO_DIR="/home/$ADMIN_USER/Signal-TLS-Proxy"
 
-    # Summary Log
     echo -e "\n--- Deployment Configuration ---"
     echo "Admin User: $ADMIN_USER"
     echo "SSH Port:   $SSH_PORT"
@@ -127,7 +132,6 @@ step_6_cert_and_commit() {
     log "Running Certbot and Finalizing Deployment..."
     cd "$REPO_DIR"
     
-    # DNS Propagation Waiter
     log "Waiting for DNS propagation for $FQDN..."
     local my_ip; my_ip=$(curl -s ifconfig.me)
     local count=0
@@ -151,7 +155,6 @@ EOF
     systemctl daemon-reload
     systemctl restart ssh.socket || systemctl restart ssh
     
-    # Commitment check
     local confirm=""
     if [[ "${AUTO_COMMIT:-false}" == "true" ]]; then
         confirm="YES"
@@ -182,7 +185,7 @@ EOF
 
 # --- Main Dispatcher ---
 load_vars
-STAGES=("step_1_deps_docker" "step_2_collect_config" "step_3_identity_ssh" "step_4_repo_prep" "step_5_firewall_stage" "step_6_cert_and_commit")
+STAGES=("step_1_system_upgrade_deps" "step_2_collect_config" "step_3_identity_ssh" "step_4_repo_prep" "step_5_firewall_stage" "step_6_cert_and_commit")
 CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo 0)
 
 for i in "${!STAGES[@]}"; do
