@@ -9,7 +9,8 @@
 A surgical bash script designed to deploy a **Signal TLS Proxy** with zero-lockout SSH migration and "Docker-safe" firewalling.
 
 ## Why this exists
-Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd` socket activation for SSH. This script implements a **"Safety Bridge" philosophy**: it never closes the old SSH port until you have confirmed the new one is functional.
+Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd` socket activation for SSH. This script implements a **"Safety Bridge" philosophy**: it never closes the old SSH port until you have confirmed the new one is functional,
+if you do NOT set AUTO_COMMIT=true (AUTO_COMMIT=false is the default.
 
 ### Key Features
 * **Zero-Lockout SSH Migration:** Implements a dual-listening "Safety Bridge" (Port 22 + Custom Port) during setup.
@@ -21,7 +22,7 @@ Most automated provisioning scripts fail on Ubuntu 24.04 due to the new `systemd
 The script is designed to be flexible. You can provide configuration upfront for automation or let the script guide you. In fully automated modes (1 and 2) the script will pose only at the very end.
 
 ### 1. The One-Liner (Recommended)
-Pass variables directly on the same line to trigger a nearly automated install (the Docker container will ask you anyway about the FQDN):
+Pass variables directly on the same line to trigger a fully automated install:
 ```bash
 sudo ADMIN_USER=john SSH_PORT=55555 FQDN=signal.example.com AUTO_COMMIT=true SSH_PUBKEY="ssh-rsa ..." bash headless.sh 
 ```
@@ -39,10 +40,10 @@ sudo -E bash headless.sh
 
 
 ### 3. Interactive Mode
-If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration. It will always ask for the FQDN twice. 
+If the script detects that a required variable (like SSH_PORT or FQDN) is missing from the environment, it will **pause and prompt you** with a visible `[PROMPT]` message. It will never use "hidden" defaults, ensuring you are always in control of the configuration.
 
 ## Note
-In interactive mode, the script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
+Unless you set AUTO_COMMIT=true, the script will keep Port 22 open alongside your new port. **Do not close your current terminal window** until you have verified you can log in through the new port in a second window!
 
 > [!IMPORTANT]
 > **Security Architecture: Passwordless Operation**
