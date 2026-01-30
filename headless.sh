@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# headless.sh - Signal Proxy Hardened Provisioner (v14.2)
+# headless.sh - Signal Proxy Hardened Provisioner (v14.3)
 set -euo pipefail
 
 # --- UI & Helpers ---
@@ -10,7 +10,7 @@ die() { echo "${RED}[!]${RST} $*" >&2; exit 1; }
 
 # --- Header ---
 echo -e "${YLW}****************************************************************"
-echo -e " SIGNAL PROXY PROVISIONER: HEADLESS MODE v14.2"
+echo -e " SIGNAL PROXY PROVISIONER: HEADLESS MODE v14.3"
 echo -e "****************************************************************${RST}"
 
 # --- Config & State ---
@@ -40,7 +40,7 @@ EOF
 # --- Step Functions ---
 
 step_1_system_upgrade_deps() {
-    log "Performing full system upgrade (this ensures latest security patches)..."
+    log "Performing full system upgrade (security hardening)..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
@@ -76,14 +76,6 @@ step_2_collect_config() {
     fi
 
     REPO_DIR="/home/$ADMIN_USER/Signal-TLS-Proxy"
-
-    echo -e "\n--- Deployment Configuration ---"
-    echo "Admin User: $ADMIN_USER"
-    echo "SSH Port:   $SSH_PORT"
-    echo "FQDN:       $FQDN"
-    echo "Repo Dir:   $REPO_DIR"
-    echo -e "--------------------------------\n"
-    
     save_vars
 }
 
@@ -122,6 +114,7 @@ step_5_firewall_stage() {
     iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
     iptables -A INPUT -i lo -j ACCEPT
     iptables -A INPUT -p icmp -j ACCEPT
+    # Temporary bridge: Open old 22 and new SSH_PORT
     iptables -A INPUT -p tcp -m multiport --dports 80,443,22,"$SSH_PORT" -j ACCEPT
 
     ip6tables -P INPUT DROP && ip6tables -P FORWARD DROP && ip6tables -P OUTPUT DROP
@@ -144,7 +137,9 @@ step_6_cert_and_commit() {
     done
     echo ""
 
-    ./init-certificate.sh
+    # AUTOMATION FIX: Feed FQDN to the interactive Signal script
+    log "Requesting SSL Certificate..."
+    echo "$FQDN" | ./init-certificate.sh
     
     log "Establishing SSH Safety Bridge..."
     cat > /etc/ssh/sshd_config.d/99-proxy.conf <<EOF
@@ -159,13 +154,15 @@ EOF
     local confirm=""
     if [[ "${AUTO_COMMIT:-false}" == "true" ]]; then
         confirm="YES"
-        log "AUTO_COMMIT detected. Finalizing lockdown..."
+        log "AUTO_COMMIT=true: Skipping manual verification..."
     else
-        echo -e "${YLW}>>> BRIDGE ACTIVE. TEST NEW CONNECTION:${RST} ssh -p $SSH_PORT ${ADMIN_USER}@$(curl -s ifconfig.me)"
-        read -r -p "Type 'YES' to COMMIT (drops port 22): " confirm
+        echo -e "\n${YLW}>>> BRIDGE ACTIVE. PLEASE TEST YOUR NEW CONNECTION NOW:${RST}"
+        echo -e "${GRN}    ssh -p $SSH_PORT ${ADMIN_USER}@$(curl -s ifconfig.me)${RST}\n"
+        read -r -p "If it works, type 'YES' to drop Port 22 and finish: " confirm
     fi
     
     if [[ "$confirm" == "YES" ]]; then
+        # Lockdown SSH to only the custom port
         cat > /etc/ssh/sshd_config.d/99-proxy.conf <<EOF
 Port $SSH_PORT
 PasswordAuthentication no
@@ -173,6 +170,7 @@ EOF
         systemctl daemon-reload
         systemctl restart ssh.socket || systemctl restart ssh
         
+        # Lockdown Firewall (Remove Port 22)
         iptables -D INPUT -p tcp -m multiport --dports 80,443,22,"$SSH_PORT" -j ACCEPT || true
         iptables -A INPUT -p tcp -m multiport --dports 80,443,"$SSH_PORT" -j ACCEPT
         netfilter-persistent save
@@ -180,7 +178,8 @@ EOF
         docker compose up -d
         ok "Provisioning complete! System is hardened on port $SSH_PORT."
     else
-        die "Commit aborted. SSH remains in dual-listen mode."
+        echo -e "${RED}Commit aborted.${RST} System remains in dual-listen mode."
+        exit 0
     fi
 }
 
@@ -189,14 +188,12 @@ load_vars
 
 STAGES=("step_1_system_upgrade_deps" "step_2_collect_config" "step_3_identity_ssh" "step_4_repo_prep" "step_5_firewall_stage" "step_6_cert_and_commit")
 
-# Robustly get current stage
 if [[ -f "$STATE_FILE" ]]; then
     CURRENT=$(cat "$STATE_FILE")
 else
     CURRENT=0
 fi
 
-# Math-safe loop
 for i in "${!STAGES[@]}"; do
     if (( i >= CURRENT )); then
         ${STAGES[$i]}
